@@ -1,0 +1,16 @@
+server:
+  shutdown: graceful
+
+spring:
+  jpa:
+    show-sql: false
+
+app:
+  security:
+    refresh-cookie:
+      secure: ${REFRESH_COOKIE_SECURE:true}
+
+logging:
+  level:
+    root: INFO
+    com.recontent.backend: INFO

@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: re-content-postgres
+    environment:
+      POSTGRES_DB: recontent
+      POSTGRES_USER: recontent
+      POSTGRES_PASSWORD: recontent
+    ports:
+      - "5432:5432"
+    volumes:
+      - re-content-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U recontent -d recontent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+    container_name: re-content-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      DB_URL: jdbc:postgresql://postgres:5432/recontent
+      DB_USERNAME: recontent
+      DB_PASSWORD: recontent
+      JWT_ISSUER: re-content-backend
+      JWT_SECRET: replace-with-a-long-random-secret-at-least-32-bytes
+      JWT_ACCESS_TOKEN_TTL_MINUTES: 15
+      REFRESH_TOKEN_TTL_DAYS: 30
+      REFRESH_COOKIE_SECURE: "false"
+      REFRESH_COOKIE_SAME_SITE: Lax
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+    ports:
+      - "8080:8080"
+
+volumes:
+  re-content-postgres-data:
