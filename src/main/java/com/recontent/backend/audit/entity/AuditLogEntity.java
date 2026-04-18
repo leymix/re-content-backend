@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.ColumnTransformer;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -28,6 +29,7 @@ public class AuditLogEntity {
     private String entityId;
 
     @Column(name = "metadata_json", columnDefinition = "jsonb")
+    @ColumnTransformer(read = "metadata_json::text", write = "?::jsonb")
     private String metadataJson;
 
     @Column(name = "created_at", nullable = false, updatable = false)

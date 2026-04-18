@@ -1,0 +1,2054 @@
+﻿{
+    "info":  {
+                 "_postman_id":  "085790a3-d36b-4868-9fb6-6e2f5c5a075e",
+                 "name":  "re-content-backend",
+                 "description":  "Comprehensive API test collection for the re-content-backend Spring Boot service.",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "item":  [
+                 {
+                     "name":  "Health",
+                     "description":  {
+                                         "content":  "Application-level health checks.",
+                                         "type":  "text/markdown"
+                                     },
+                     "item":  [
+                                  {
+                                      "name":  "GET /api/v1/health",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/health",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "health"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Public health endpoint exposed by `HealthController`.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Health endpoint is UP\u0027, function () {",
+                                                                                    "  pm.response.to.have.status(200);",
+                                                                                    "  const json = pm.response.json();",
+                                                                                    "  pm.expect(json.status).to.eql(\u0027UP\u0027);",
+                                                                                    "});"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Auth",
+                     "description":  {
+                                         "content":  "Authentication and token lifecycle. Register/login also return a `Set-Cookie` refresh token.",
+                                         "type":  "text/markdown"
+                                     },
+                     "item":  [
+                                  {
+                                      "name":  "Register",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/auth/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "auth",
+                                                                               "register"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Creates a new user. Pre-request script generates unique email/username and stores auth variables (\u0007ccessToken, \refreshToken, userId).",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"{{registerUsername}}\",\n  \"email\": \"{{registerEmail}}\",\n  \"password\": \"{{registerPassword}}\",\n  \"firstName\": \"QA\",\n  \"lastName\": \"User\"\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const suffix = Date.now();",
+                                                                                    "pm.environment.set(\u0027registerUsername\u0027, \u0027qa_user_\u0027 + suffix);",
+                                                                                    "pm.environment.set(\u0027registerEmail\u0027, \u0027qa_user_\u0027 + suffix + \u0027@example.com\u0027);",
+                                                                                    "if (!pm.environment.get(\u0027registerPassword\u0027)) {",
+                                                                                    "  pm.environment.set(\u0027registerPassword\u0027, \u0027StrongPass123!\u0027);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is success\u0027, function () {",
+                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                                                                    "});",
+                                                                                    "",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (json \u0026\u0026 json.accessToken) {",
+                                                                                    "  pm.environment.set(\u0027accessToken\u0027, json.accessToken);",
+                                                                                    "}",
+                                                                                    "if (json \u0026\u0026 json.user \u0026\u0026 json.user.id) {",
+                                                                                    "  pm.environment.set(\u0027userId\u0027, json.user.id);",
+                                                                                    "}",
+                                                                                    "",
+                                                                                    "const setCookie = pm.response.headers.get(\u0027Set-Cookie\u0027);",
+                                                                                    "if (setCookie) {",
+                                                                                    "  const m = setCookie.match(/refresh_token=([^;]+)/);",
+                                                                                    "  if (m \u0026\u0026 m[1]) {",
+                                                                                    "    pm.environment.set(\u0027refreshToken\u0027, m[1]);",
+                                                                                    "  }",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Login (User)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/auth/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "auth",
+                                                                               "login"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Logs in with email or username (`login` field) and refreshes auth variables.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"login\": \"{{registerEmail}}\",\n  \"password\": \"{{registerPassword}}\"\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is success\u0027, function () {",
+                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                                                                    "});",
+                                                                                    "",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (json \u0026\u0026 json.accessToken) {",
+                                                                                    "  pm.environment.set(\u0027accessToken\u0027, json.accessToken);",
+                                                                                    "}",
+                                                                                    "if (json \u0026\u0026 json.user \u0026\u0026 json.user.id) {",
+                                                                                    "  pm.environment.set(\u0027userId\u0027, json.user.id);",
+                                                                                    "}",
+                                                                                    "",
+                                                                                    "const setCookie = pm.response.headers.get(\u0027Set-Cookie\u0027);",
+                                                                                    "if (setCookie) {",
+                                                                                    "  const m = setCookie.match(/refresh_token=([^;]+)/);",
+                                                                                    "  if (m \u0026\u0026 m[1]) {",
+                                                                                    "    pm.environment.set(\u0027refreshToken\u0027, m[1]);",
+                                                                                    "  }",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Login (Admin)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/auth/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "auth",
+                                                                               "login"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Stores admin bearer token in `adminAccessToken`. Requires an existing ADMIN user.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"login\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Admin login status is success\u0027, function () {",
+                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                                                                    "});",
+                                                                                    "",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (json \u0026\u0026 json.accessToken) {",
+                                                                                    "  pm.environment.set(\u0027adminAccessToken\u0027, json.accessToken);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Refresh Token",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Cookie",
+                                                                         "value":  "refresh_token={{refreshToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/auth/refresh",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "auth",
+                                                                               "refresh"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Uses `refresh_token` cookie (or explicit Cookie header) and rotates both refresh/access token.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Refresh successful\u0027, function () {",
+                                                                                    "  pm.response.to.have.status(200);",
+                                                                                    "});",
+                                                                                    "",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (json \u0026\u0026 json.accessToken) {",
+                                                                                    "  pm.environment.set(\u0027accessToken\u0027, json.accessToken);",
+                                                                                    "}",
+                                                                                    "",
+                                                                                    "const setCookie = pm.response.headers.get(\u0027Set-Cookie\u0027);",
+                                                                                    "if (setCookie) {",
+                                                                                    "  const m = setCookie.match(/refresh_token=([^;]+)/);",
+                                                                                    "  if (m \u0026\u0026 m[1]) {",
+                                                                                    "    pm.environment.set(\u0027refreshToken\u0027, m[1]);",
+                                                                                    "  }",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Get Current Auth User",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/auth/me",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "auth",
+                                                                               "me"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Returns auth envelope with current user under `user` field.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Logout",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Cookie",
+                                                                         "value":  "refresh_token={{refreshToken}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/auth/logout",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "auth",
+                                                                               "logout"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Revokes refresh token and clears auth variables.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Logout returns 204\u0027, function () {",
+                                                                                    "  pm.response.to.have.status(204);",
+                                                                                    "});",
+                                                                                    "pm.environment.unset(\u0027accessToken\u0027);",
+                                                                                    "pm.environment.unset(\u0027refreshToken\u0027);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Register (Negative Validation)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/auth/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "auth",
+                                                                               "register"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Negative test for validation contract. Expected `400` + `VALIDATION_ERROR`.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"x\",\n  \"email\": \"invalid-email\",\n  \"password\": \"short\"\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Validation error\u0027, function () {",
+                                                                                    "  pm.response.to.have.status(400);",
+                                                                                    "  const json = pm.response.json();",
+                                                                                    "  pm.expect(json.code).to.eql(\u0027VALIDATION_ERROR\u0027);",
+                                                                                    "});"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Users",
+                     "description":  {
+                                         "content":  "User profile operations for authenticated user.",
+                                         "type":  "text/markdown"
+                                     },
+                     "item":  [
+                                  {
+                                      "name":  "Get My Profile",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Returns `UserResponse` payload.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (json \u0026\u0026 json.id) {",
+                                                                                    "  pm.environment.set(\u0027userId\u0027, json.id);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Update My Profile",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Optional profile fields, max lengths enforced server-side.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"firstName\": \"QA Updated\",\n  \"lastName\": \"User\",\n  \"avatarUrl\": \"https://example.com/avatar.png\"\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Profile updated\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Favorites",
+                     "description":  {
+                                         "content":  "Favorites are upserted by `user + mediaType + mediaId`.",
+                                         "type":  "text/markdown"
+                                     },
+                     "item":  [
+                                  {
+                                      "name":  "List Favorites",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/favorites",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "favorites"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Lists current user\u0027s favorites ordered by latest creation.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Add Favorite",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/favorites",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "favorites"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Supports aliases `id`, `poster_path`, `backdrop_path`, `release_date`, `vote_average`.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"mediaType\": \"movie\",\n  \"id\": 550,\n  \"title\": \"Fight Club\",\n  \"poster_path\": \"/poster.jpg\",\n  \"backdrop_path\": \"/backdrop.jpg\",\n  \"overview\": \"A classic\",\n  \"release_date\": \"1999-10-15\",\n  \"vote_average\": 8.4\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Favorite created/updated\u0027, function () {",
+                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                                                                    "});",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (json \u0026\u0026 json.id) {",
+                                                                                    "  pm.environment.set(\u0027favoriteId\u0027, json.id);",
+                                                                                    "}",
+                                                                                    "if (json \u0026\u0026 json.mediaId) {",
+                                                                                    "  pm.environment.set(\u0027favoriteMediaId\u0027, String(json.mediaId));",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Delete Favorite",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/favorites/movie/{{favoriteMediaId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "favorites",
+                                                                               "movie",
+                                                                               "{{favoriteMediaId}}"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Deletes favorite by path variables `mediaType` and `mediaId`.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Deleted\u0027, function () { pm.response.to.have.status(204); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Watchlist",
+                     "description":  {
+                                         "content":  "Watchlist supports statuses: `planned`, `watching`, `completed`, `dropped`.",
+                                         "type":  "text/markdown"
+                                     },
+                     "item":  [
+                                  {
+                                      "name":  "List Watchlist",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/watchlist",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "watchlist"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Returns watchlist items ordered by `updatedAt` descending.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Add Watchlist Item",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/watchlist",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "watchlist"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Upserts item by media reference; captures `watchlistItemId`.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"mediaType\": \"tv\",\n  \"id\": 1399,\n  \"title\": \"Game of Thrones\",\n  \"poster_path\": \"/got-poster.jpg\",\n  \"backdrop_path\": \"/got-backdrop.jpg\",\n  \"overview\": \"Winter is coming.\",\n  \"release_date\": \"2011-04-17\",\n  \"vote_average\": 8.3,\n  \"status\": \"planned\"\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Watchlist item upserted\u0027, function () {",
+                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                                                                    "});",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (json \u0026\u0026 json.id) {",
+                                                                                    "  pm.environment.set(\u0027watchlistItemId\u0027, json.id);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Update Watchlist Status",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/watchlist/{{watchlistItemId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "watchlist",
+                                                                               "{{watchlistItemId}}"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Validates status enum.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"status\": \"watching\"\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status updated\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Delete Watchlist Item",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/watchlist/{{watchlistItemId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "watchlist",
+                                                                               "{{watchlistItemId}}"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Deletes current user\u0027s watchlist item by UUID.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Deleted\u0027, function () { pm.response.to.have.status(204); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Ratings",
+                     "description":  {
+                                         "content":  "Ratings are upserted by media reference. Score range: 0.5 to 10.0.",
+                                         "type":  "text/markdown"
+                                     },
+                     "item":  [
+                                  {
+                                      "name":  "List Ratings",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/ratings",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "ratings"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Lists current user\u0027s ratings.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Add Rating",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/ratings",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "ratings"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Creates or updates rating and stores `ratingId`.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"mediaType\": \"movie\",\n  \"mediaId\": 603,\n  \"score\": 9.5\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Rating upserted\u0027, function () {",
+                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                                                                    "});",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (json \u0026\u0026 json.id) {",
+                                                                                    "  pm.environment.set(\u0027ratingId\u0027, json.id);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Update Rating",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/ratings/{{ratingId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "ratings",
+                                                                               "{{ratingId}}"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Updates score for existing rating.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"score\": 8.5\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Updated\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Delete Rating",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/ratings/{{ratingId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "ratings",
+                                                                               "{{ratingId}}"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Deletes rating by UUID.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Deleted\u0027, function () { pm.response.to.have.status(204); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Add Rating (Negative Validation)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/ratings",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "ratings"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Negative validation case for score upper bound.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"mediaType\": \"tv\",\n  \"mediaId\": 1399,\n  \"score\": 12\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Validation error\u0027, function () {",
+                                                                                    "  pm.response.to.have.status(400);",
+                                                                                    "  const json = pm.response.json();",
+                                                                                    "  pm.expect(json.code).to.eql(\u0027VALIDATION_ERROR\u0027);",
+                                                                                    "});"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Reviews",
+                     "description":  {
+                                         "content":  "Public listing endpoint plus authenticated write/update/delete flows.",
+                                         "type":  "text/markdown"
+                                     },
+                     "item":  [
+                                  {
+                                      "name":  "List Reviews For Media",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/reviews/movie/603",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "reviews",
+                                                                               "movie",
+                                                                               "603"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Public endpoint. Lists reviews by media type and media id.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Create Review",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/reviews",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "reviews"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Creates a review and stores `reviewId`.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"mediaType\": \"movie\",\n  \"mediaId\": 603,\n  \"content\": \"A thoughtful review with enough length.\",\n  \"spoilerFlag\": false\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Review created\u0027, function () {",
+                                                                                    "  pm.response.to.have.status(201);",
+                                                                                    "});",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (json \u0026\u0026 json.id) {",
+                                                                                    "  pm.environment.set(\u0027reviewId\u0027, json.id);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Update Review",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/reviews/{{reviewId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "reviews",
+                                                                               "{{reviewId}}"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Allowed for review owner or ADMIN.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"content\": \"Updated review content that remains valid.\",\n  \"spoilerFlag\": true\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Updated\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Delete Review",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/reviews/{{reviewId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "reviews",
+                                                                               "{{reviewId}}"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Deletes review. Owner or admin only.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Deleted\u0027, function () { pm.response.to.have.status(204); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Membership",
+                     "description":  {
+                                         "content":  "Plan listing is public. Subscription and current membership require auth.",
+                                         "type":  "text/markdown"
+                                     },
+                     "item":  [
+                                  {
+                                      "name":  "List Membership Plans",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/membership/plans",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "membership",
+                                                                               "plans"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Public endpoint. Stores first plan id into `membershipPlanId`.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Membership plans listed\u0027, function () {",
+                                                                                    "  pm.response.to.have.status(200);",
+                                                                                    "});",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (Array.isArray(json) \u0026\u0026 json.length \u003e 0 \u0026\u0026 json[0].id) {",
+                                                                                    "  pm.environment.set(\u0027membershipPlanId\u0027, json[0].id);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Subscribe",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/membership/subscribe",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "membership",
+                                                                               "subscribe"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Subscribes current user to selected plan UUID.",
+                                                                          "type":  "text/markdown"
+                                                                      },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"planId\": \"{{membershipPlanId}}\"\n}"
+                                                               }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Subscribed\u0027, function () {",
+                                                                                    "  pm.response.to.have.status(201);",
+                                                                                    "});",
+                                                                                    "let json;",
+                                                                                    "try { json = pm.response.json(); } catch (e) {}",
+                                                                                    "if (json \u0026\u0026 json.id) {",
+                                                                                    "  pm.environment.set(\u0027userMembershipId\u0027, json.id);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Get My Membership",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/users/me/membership",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "users",
+                                                                               "me",
+                                                                               "membership"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Returns active membership or `null`.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Admin",
+                     "description":  {
+                                         "content":  "All endpoints require `ADMIN` role. Use `adminAccessToken`.",
+                                         "type":  "text/markdown"
+                                     },
+                     "item":  [
+                                  {
+                                      "name":  "List Users (Admin)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/admin/users",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "admin",
+                                                                               "users"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Lists all users and role sets.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "List Audit Logs (Admin)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/admin/audit-logs",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "admin",
+                                                                               "audit-logs"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "page",
+                                                                                    "value":  "0"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "size",
+                                                                                    "value":  "50"
+                                                                                }
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Paged audit logs. Size is capped to 100 by backend.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Admin Health Summary",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/admin/health-summary",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "admin",
+                                                                               "health-summary"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Aggregated counts for users and domain tables.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "Admin Endpoint (Negative - USER token)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{accessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/v1/admin/users",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "admin",
+                                                                               "users"
+                                                                           ],
+                                                                  "query":  [
+
+                                                                            ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Expected `403 FORBIDDEN` for non-admin users.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Forbidden for non-admin\u0027, function () {",
+                                                                                    "  pm.response.to.have.status(403);",
+                                                                                    "});"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "Actuator",
+                     "description":  {
+                                         "content":  "Public actuator endpoints enabled by configuration.",
+                                         "type":  "text/markdown"
+                                     },
+                     "item":  [
+                                  {
+                                      "name":  "GET /actuator/health",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/actuator/health",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "actuator",
+                                                                               "health"
+                                                                           ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Actuator health endpoint.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Actuator health status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /actuator/info",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Accept",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/actuator/info",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "actuator",
+                                                                               "info"
+                                                                           ]
+                                                              },
+                                                      "description":  {
+                                                                          "content":  "Actuator info endpoint.",
+                                                                          "type":  "text/markdown"
+                                                                      }
+                                                  },
+                                      "response":  [
+
+                                                   ],
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Actuator info status 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 }
+             ]
+}
