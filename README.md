@@ -342,6 +342,24 @@ http://localhost:3000
 http://127.0.0.1:3000
 ```
 
+## Full-Stack Infra Entry Point
+
+For full-stack local/self-host style runtime with a single Nginx entrypoint,
+use the infra setup inside this backend repository:
+
+```powershell
+cd C:\Users\ayhan\Desktop\operatipnProject\re-content-backend\infra
+copy .env.example .env
+docker compose --env-file .env up --build
+```
+
+This stack runs:
+
+- `postgres`
+- `backend`
+- `frontend`
+- `nginx` (public entrypoint at `http://localhost`)
+
 ## Tests
 
 Run:
